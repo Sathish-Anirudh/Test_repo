@@ -1,120 +1,35 @@
+from flask import Flask, request
 import sqlite3
+import os
+
+app = Flask(__name__)
 
 
-connection = sqlite3.connect("users.db")
-cursor = connection.cursor()
+@app.route("/user")
+def get_user():
 
-cursor.execute(
-    "SELECT * FROM users"
-)
+    user_id = request.args.get("id")
 
-user_id = 10
+    conn = sqlite3.connect("users.db")
 
-cursor.execute(
-    "SELECT * FROM users WHERE id=?",
-    (user_id,)
-)
+    # SQL Injection
+    query = "SELECT * FROM users WHERE id = " + user_id
 
+    result = conn.execute(query)
 
-username = "john"
-
-cursor.execute(
-    "INSERT INTO users(name) VALUES(?)",
-    (username,)
-)
+    return str(result.fetchall())
 
 
-cursor.execute(
-    "UPDATE users SET active=? WHERE id=?",
-    (1, user_id)
-)
+@app.route("/run")
+def run_command():
+
+    cmd = request.args.get("cmd")
+
+    # Command Injection
+    os.system(cmd)
+
+    return "done"
 
 
-name = input("Enter username: ")
-
-
-query1 = (
-    "SELECT * FROM users WHERE name='"
-    + name
-    + "'"
-)
-
-
-cursor.execute(query1)
-
-email = input("Email: ")
-
-
-query2 = f"""
-SELECT *
-FROM users
-WHERE email='{email}'
-"""
-
-
-cursor.execute(query2)
-
-
-
-uid = input("ID: ")
-
-
-query3 = (
-    "SELECT * FROM users WHERE id={}"
-    .format(uid)
-)
-
-
-cursor.execute(query3)
-
-search = input("Search: ")
-
-
-dynamic_query = (
-    "SELECT * FROM products WHERE name='"
-    + search
-    + "'"
-)
-
-
-cursor.execute(dynamic_query)
-
-
-
-
-
-bad_query1 = """
-SELECT *
-FROM users
-WHERE username='admin'
-OR 1=1
-"""
-
-
-bad_query2 = """
-SELECT *
-FROM users
-WHERE role='admin'
-OR 'abc'='abc'
-"""
-
-
-bad_query3 = """
-SELECT *
-FROM users
-WHERE id=2
-OR 999=999
-"""
-
-
-message = """
-SELECT is used to retrieve data
-"""
-
-
-table_name = "users"
-
-
-normal_text = (
-    "UPDATE documentation"
-)
+if __name__ == "__main__":
+    app.run(debug=True)
