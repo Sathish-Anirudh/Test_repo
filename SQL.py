@@ -14,7 +14,7 @@ cursor = conn.cursor()
 def one():
 
     user = request.args.get("user")
-
+    print("hello")
     cursor.execute(
         "SELECT * FROM users WHERE name='%s'" % user
     )
